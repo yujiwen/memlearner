@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="MemLearner: Learning to Query Context Memory for Video World Models">
+  <meta name="keywords" content="Video World Model, Interactive Video Generation, Video Diffusion Model">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MemLearner: Learning to Query Context Memory for Video World Models</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+
+  <style>
+    :root {
+      --accent: #5b6cff;
+      --accent-dark: #3b49d6;
+      --ink: #1f2430;
+      --muted: #6b7280;
+      --bg-alt: #f5f7fc;
+      --border: #e7e9f0;
+    }
+
+    /* ---------- Typography ---------- */
+    body {
+      font-family: 'Inter', 'Noto Sans', sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    .title, .subtitle, .publication-title, .navbar-link, .button {
+      font-family: 'Sora', 'Inter', sans-serif;
+    }
+    .publication-title {
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+    }
+
+    /* ---------- Title hero ---------- */
+    .title-hero {
+      background: radial-gradient(1200px 420px at 50% -120px, #e9edff 0%, #f6f8ff 45%, #ffffff 80%);
+      border-bottom: 1px solid var(--border);
+    }
+    .venue-badge {
+      display: inline-block;
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      background: #fff0f3;
+      color: #ff3860;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.3px;
+      border: 1px solid #ffd6df;
+    }
+
+    /* ---------- Block separation ---------- */
+    .block-section { padding: 4rem 1.5rem; }
+    .block-alt { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+    /* ---------- Section headings with accent underline ---------- */
+    .section-heading {
+      position: relative;
+      display: inline-block;
+      font-weight: 700;
+      margin-bottom: 2.5rem !important;
+      padding-bottom: 0.7rem;
+    }
+    .section-heading::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: 60px;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), #9aa6ff);
+    }
+
+    /* ---------- Links ---------- */
+    a { color: var(--accent); transition: color .15s ease; }
+    a:hover { color: var(--accent-dark); }
+    .publication-authors a { color: var(--accent) !important; font-weight: 600; }
+
+    /* ---------- Buttons ---------- */
+    .publication-links .button.is-dark {
+      background: var(--ink);
+      border: none;
+      border-radius: 999px;
+      padding-left: 1.3rem;
+      padding-right: 1.3rem;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .publication-links .button.is-dark:hover {
+      background: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* ---------- Navbar ---------- */
+    .navbar { border-bottom: 1px solid var(--border); }
+    .navbar-link, .navbar-item { font-weight: 600; }
+
+    /* ---------- Cards / videos ---------- */
+    .card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 24px rgba(31, 36, 48, 0.06);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px rgba(31, 36, 48, 0.14);
+    }
+    .card-image video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ---------- Figures ---------- */
+    .publication-img {
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(31, 36, 48, 0.08);
+    }
+    .fig-caption {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+      max-width: 920px;
+      margin: 0.9rem auto 0;
+    }
+
+    /* ---------- Misc ---------- */
+    .hl { color: #ff3860; font-weight: 700; }
+    .smaller-text { font-size: 0.85rem; }
+    .section-divider {
+      border-top: 1px solid var(--border);
+      margin-top: 2.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .author-footnote { font-size: 0.95rem; margin-top: 0.6rem; color: var(--muted); }
+    pre code {
+      background-color: #0f1222;
+      color: #e6e8f0;
+      display: block;
+      padding: 1.3rem 1.5rem;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More of Our Research Work about World Model
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://context-as-memory.github.io/">
+            Context-as-Memory (SIGGRAPH Asia 2025)
+          </a>
+          <a class="navbar-item" href="https://iranqin.github.io/WorldSimBench.github.io/">
+            WorldSimBench (ICML 2025)
+          </a>
+          <a class="navbar-item" href="https://yujiwen.github.io/gamefactory/">
+            GameFactory (ICCV 2025 Highlight)
+          </a>
+          <a class="navbar-item" href="https://arxiv.org/abs/2503.17359">
+            Position Paper about Interactive Video Generation
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== HERO / TITLE ===================== -->
+<section class="hero title-hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+
+          <h1 class="title is-1 publication-title">
+            MemLearner:<br>
+            Learning to Query Context Memory for Video World Models
+          </h1>
+
+          <!-- Venue -->
+          <div style="margin-top:1rem">
+            <span class="venue-badge">Accepted to ECCV 2026</span>
+          </div>
+
+          <!-- Authors -->
+          <div class="is-size-5 publication-authors" style="margin-top:1.2rem">
+            <span class="author-block"><a href="https://yujiwen.github.io/">Jiwen Yu</a><sup>1,&#8224;</sup>,</span>
+            <span class="author-block"><a href="https://jianxgao.github.io/">Jianxiong Gao</a><sup>2,&#8224;</sup>,</span>
+            <span class="author-block"><a href="https://jianhongbai.github.io/">Jianhong Bai</a><sup>3,&#8224;</sup>,</span>
+            <span class="author-block"><a href="https://iranqin.github.io/">Yiran Qin</a><sup>1</sup>,</span>
+            <span class="author-block"><a href="https://scholar.google.com/citations?user=dB86D_cAAAAJ&hl=zh-CN">Kaiyi Huang</a><sup>1,&#8224;</sup>,</span>
+            <br>
+            <span class="author-block"><a href="https://liuquande.github.io/">Quande Liu</a><sup>4</sup>,</span>
+            <span class="author-block"><a href="https://xinntao.github.io/">Xintao Wang</a><sup>4,#</sup>,</span>
+            <span class="author-block"><a href="https://scholar.google.com.hk/citations?user=P6MraaYAAAAJ">Pengfei Wan</a><sup>4</sup>,</span>
+            <span class="author-block"><a href="https://openreview.net/profile?id=~Kun_Gai1">Kun Gai</a><sup>4</sup>,</span>
+            <span class="author-block"><a href="https://xh-liu.github.io/">Xihui Liu</a><sup>1,#</sup></span>
+          </div>
+
+          <!-- Affiliations -->
+          <div class="is-size-5 publication-authors" style="margin-top:0.8rem">
+            <span class="author-block"><sup>1</sup>The University of Hong Kong</span>&nbsp;&nbsp;
+            <span class="author-block"><sup>2</sup>Fudan University</span>&nbsp;&nbsp;
+            <span class="author-block"><sup>3</sup>Zhejiang University</span>&nbsp;&nbsp;
+            <span class="author-block"><sup>4</sup>Kuaishou Technology</span>
+          </div>
+
+          <!-- Footnotes -->
+          <div class="is-size-6 publication-authors author-footnote">
+            <span class="author-block"><sup>&#8224;</sup>Work done during an internship at Kling Team, Kuaishou Technology,</span>&nbsp;
+            <span class="author-block"><sup>#</sup>Corresponding authors</span>
+          </div>
+
+          <!-- Links / Buttons -->
+          <!-- TODO: replace the arXiv placeholder href; GitHub / Dataset buttons are
+               kept commented out below and can be enabled once the links are ready. -->
+          <div class="column has-text-centered" style="margin-top:1.2rem">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="ai ai-arxiv"></i></span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!--
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-database"></i></span>
+                  <span>Dataset</span>
+                </a>
+              </span>
+              -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TEASER ===================== -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body has-text-centered">
+      <img src="./static/images/teaser-1.png" alt="MemLearner teaser" class="publication-img">
+      <h2 class="subtitle has-text-centered" style="margin-top:1rem">
+        <strong>MemLearner</strong> learns to adaptively query context memory, enabling
+        scene-consistent long video generation under occlusions and dynamic objects.
+      </h2>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DEMOS ===================== -->
+<section class="hero is-small block-alt">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3 section-heading">Demos</h2>
+
+          <div class="columns is-centered">
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-image">
+                  <video muted loop="loop" width="100%" preload controls>
+                    <source src="./video/demo/1.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="card-content"><div class="content"><p class="smaller-text">Demo #1</p></div></div>
+              </div>
+            </div>
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-image">
+                  <video muted loop="loop" width="100%" preload controls>
+                    <source src="./video/demo/2.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="card-content"><div class="content"><p class="smaller-text">Demo #2</p></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="columns is-centered">
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-image">
+                  <video muted loop="loop" width="100%" preload controls>
+                    <source src="./video/demo/3.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="card-content"><div class="content"><p class="smaller-text">Demo #3</p></div></div>
+              </div>
+            </div>
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-image">
+                  <video muted loop="loop" width="100%" preload controls>
+                    <source src="./video/demo/4.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="card-content"><div class="content"><p class="smaller-text">Demo #4</p></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="columns is-centered">
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-image">
+                  <video muted loop="loop" width="100%" preload controls>
+                    <source src="./video/demo/5.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="card-content"><div class="content"><p class="smaller-text">Demo #5</p></div></div>
+              </div>
+            </div>
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-image">
+                  <video muted loop="loop" width="100%" preload controls>
+                    <source src="./video/demo/6.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="card-content"><div class="content"><p class="smaller-text">Demo #6</p></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="columns is-centered">
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-image">
+                  <video muted loop="loop" width="100%" preload controls>
+                    <source src="./video/demo/7.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="card-content"><div class="content"><p class="smaller-text">Demo #7</p></div></div>
+              </div>
+            </div>
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-image">
+                  <video muted loop="loop" width="100%" preload controls>
+                    <source src="./video/demo/8.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="card-content"><div class="content"><p class="smaller-text">Demo #8</p></div></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== METHOD ===================== -->
+<section class="section block-section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full has-text-centered">
+        <h2 class="title is-3 section-heading">Method</h2>
+
+        <!-- Method overview / motivation -->
+        <div class="content has-text-justified" style="font-size:1.05rem; line-height:1.75; margin-bottom:2.5rem;">
+          <p>
+            A Video World Model generates future frames conditioned on past frames and user actions.
+            Its central weakness is <strong>memory</strong>: with only a limited context window, the
+            model quickly forgets what it has already generated, so scenes drift and become
+            inconsistent over long durations. A promising remedy is to keep previously generated
+            frames as a <em>memory bank</em> and feed the relevant ones back as context. The question
+            is <em>how to decide which frames are relevant</em>. Prior context-retrieval methods rely
+            on <strong>hand-crafted rules</strong>&nbsp;&mdash; e.g., matching camera field-of-view
+            overlap or point clouds&nbsp;&mdash; which break down in realistic scenes with
+            <strong>occlusions</strong> and <strong>moving objects</strong>, where geometry alone
+            cannot tell what actually matters.
+          </p>
+          <p>
+            Our key idea is a <span class="hl">paradigm shift</span>: instead of hand-crafted retrieval
+            rules, we let the model <span class="hl">learn to adaptively query its own memory
+            end-to-end</span>. Concretely, we
+            introduce <strong>query tokens (Q)</strong> as an information bridge between
+            <strong>context tokens (C)</strong> and <strong>predicted tokens (P)</strong>: the Q tokens
+            attend to C to gather the context that is actually useful, and the P tokens attend to Q as
+            the condition for generation. Rather than adding a separate retrieval module&nbsp;&mdash;
+            which we find fails to train from scratch (Figure&nbsp;1)&nbsp;&mdash; we reuse the
+            <strong>video generation model itself</strong> by feeding C, Q, and P tokens together,
+            so context querying directly inherits the model's pre-trained visual priors. To keep this
+            affordable on long videos, we further introduce two <strong>efficiency strategies</strong>
+            for training and inference (Figure&nbsp;2).
+          </p>
+        </div>
+
+        <!-- Figure 1: Architecture clarification (paper Fig. 2) -->
+        <img src="./static/images/arch_clarify.png" alt="Architecture clarification" class="publication-img">
+        <p class="fig-caption has-text-justified" style="margin-bottom:3rem;">
+          <strong>Figure 1. Architecture clarification.</strong> (a) Interaction mechanism among the
+          context (<strong>C</strong>), query (<strong>Q</strong>), and predicted (<strong>P</strong>)
+          tokens. (b) &amp; (c) Two designs for context querying: the alternative design in (b) fails
+          in our experiments, while the adopted design in (c) leverages the prior knowledge of the
+          video generation model itself and performs effectively.
+        </p>
+
+        <!-- Figure 2: Efficiency strategies (paper Fig. 4) -->
+        <img src="./static/images/framework.png" alt="Efficiency strategies" class="publication-img">
+        <p class="fig-caption has-text-justified">
+          <strong>Figure 2. Efficiency Strategies.</strong> (a) Strategy&nbsp;#1: context querying is
+          performed in the shallow Query Layers with <strong>C</strong>, <strong>Q</strong>,
+          <strong>P</strong> tokens, while the deep Generative Layers process only <strong>Q</strong>,
+          <strong>P</strong> tokens. (b) Strategy&nbsp;#2: unnecessary attention computation is removed
+          for improved efficiency.
+        </p>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== BIBTEX ===================== -->
+<section class="section block-alt" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3 section-heading">BibTeX</h2>
+    <!-- TODO: update with the final published bib entry -->
+    <pre><code>@inproceedings{yu2026memlearner,
+  title     = {MemLearner: Learning to Query Context Memory for Video World Models},
+  author    = {Yu, Jiwen and Gao, Jianxiong and Bai, Jianhong and Qin, Yiran and
+               Huang, Kaiyi and Liu, Quande and Wang, Xintao and Wan, Pengfei and
+               Gai, Kun and Liu, Xihui},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2026}
+}</code></pre>
+  </div>
+</section>
+
+</body>
+</html>
